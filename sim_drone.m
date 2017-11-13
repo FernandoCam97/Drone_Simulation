@@ -1,5 +1,6 @@
 clear all; clf;
 %% DECLARE VARIABLES
+%testing Hugh
 
 armlength = 5;
 lift_constant = .5; %Denoted as "k" in the technical paper

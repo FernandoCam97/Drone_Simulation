@@ -13,7 +13,7 @@ rotor_inertia = 3*10^(-5);    %moment of inertia of rotor
 % Time Simulation Variables 
 starting_time = 0;
 ending_time = 10;
-time_step = 0.01;
+time_step = 0.1;
 steps = (ending_time - starting_time)/time_step;
 time_interval = linspace(starting_time, ending_time, steps);
 
@@ -25,6 +25,7 @@ c = [location; euler_angles]; % x,y,z,roll,pitch,yaw, and C is the center of the
 
 c_angular_velocity = zeros(3,steps);
 c_angular_acceleration = zeros(3,steps); %Roll, pitch, yaw
+nu = zeros(3,steps); % Angular velocities in the body frame
 
 c_velocity  = zeros(3,steps);
 c_acceleration = zeros(3,steps);
@@ -50,10 +51,10 @@ total_thrust = zeros(3, steps); %Denoted "T" in paper. Note only z component is 
 %Simulate rotor angular velocity
 for t = 1:length(time_interval)    
     
-        rotor_av(1,t) = 600;
-        rotor_av(2,t) = 600;
-        rotor_av(3,t) = 600;
-        rotor_av(4,t) = 600;
+        rotor_av(1,t) = 800;
+        rotor_av(2,t) = 800;
+        rotor_av(3,t) = 800;
+        rotor_av(4,t) = 800;
 
 end
 
@@ -86,9 +87,12 @@ for t = 1:length(time_interval)-1           %just so we can calculate one step a
     torque_about_c(2,t) = (thrust(3,t) - thrust(1,t))*armlength; % Affects pitch
     torque_about_c(3,t) = rotor_torque(1,t)-rotor_torque(2,t)+rotor_torque(3,t)-rotor_torque(4,t); %Affects yaw
     
+    % Calculate nu (angular velocities in the body frame)
+    nu(:,t) = solve_diff_nu(torque_about_c,I,time_step,t,[0; 0; 0]);
+    
     %Calculate (translational) acceleration
     c_acceleration(:,t) = g + (rotation_matrix(euler_angles(:,t))...
-        *total_thrust(:,t))/mass;
+        *total_thrust(:,t))/mass; 
     
     %Calculate angular acceleration
     c_angular_acceleration(:,t) = inv(I)*torque_about_c(:,t);
@@ -109,12 +113,14 @@ for t = 1:length(time_interval)-1           %just so we can calculate one step a
         
         
         %Plot
+        %{
         cla;
         figure(1)
         plot_3D_stationary_drone(location(:,t), euler_angles(:,t), armlength);
-        axis([-0.5 0.5 -0.5 0.5 -0.5 0.5]);
+        axis([-0.5 5 -0.5 5 -0.5 5]);
         title(['Plot at time: ' num2str(t) ' out of ' num2str(length(time_interval))] );
         pause(0.1);
+        %}
     end
 end
 
@@ -122,6 +128,7 @@ end
 %% GRAPH RESULTS
 
 %Second component of AA, AV, EA
+%{
 figure(2)
 hold on
 plot(time_interval,c_angular_acceleration(2,:));
@@ -130,6 +137,6 @@ plot(time_interval,euler_angles(2,:));
 hold off
 title('First component of AA, AV, EA')
 legend('Angular Accerlation', 'Angular Velocity', 'Euler Angles')
-
+%}
 
     

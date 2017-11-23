@@ -51,10 +51,17 @@ total_thrust = zeros(3, steps); %Denoted "T" in paper. Note only z component is 
 %Simulate rotor angular velocity
 for t = 1:length(time_interval)    
     
-        rotor_av(1,t) = 800;
-        rotor_av(2,t) = 0;
-        rotor_av(3,t) = 800;
-        rotor_av(4,t) = 0;
+    if(t<10)
+        rotor_av(1,t) = 610+0.1*t;
+        rotor_av(2,t) = 610;
+        rotor_av(3,t) = 610-0.1*t;
+        rotor_av(4,t) = 610;
+    else
+        rotor_av(1,t) = 650;
+        rotor_av(2,t) = 650;
+        rotor_av(3,t) = 650;
+        rotor_av(4,t) = 650;
+    end
 
 end
 
@@ -90,37 +97,41 @@ for t = 1:length(time_interval)-1           %just so we can calculate one step a
     % Calculate nu (angular velocities in the body frame)
     nu(:,t) = solve_diff_nu(torque_about_c,I,time_step,t,[0;0;0]);
     
-    %Calculate (translational) acceleration
-    c_acceleration(:,t) = g + (rotation_matrix(euler_angles(:,t))...
-        *total_thrust(:,t))/mass; 
+    
+    % Calculate eta (from paper)
+    c_angular_velocity(:,t) = get_euler_angles_dot(euler_angles(:,t), nu(:,t));
     
     %Calculate angular acceleration
-    c_angular_acceleration(:,t) = inv(I)*torque_about_c(:,t);
+    c_angular_acceleration(:,t) = get_euler_angles_ddot(euler_angles(:,t),...
+        nu(:,t), I, torque_about_c(:,t));
     
     
     %"Integrate" to calculate angular velocity and Euler Angles. This if
     %condition is sketchy, might not be needed
     if t > 1
-        c_angular_velocity(:,t) = c_angular_velocity(:,t-1) + c_angular_acceleration(:,t)*time_step;
         euler_angles(:, t) = euler_angles(:, t-1) + c_angular_velocity(:, t)*time_step; 
         euler_angles(:, t) = angle_converter(euler_angles(:,t));
         
         %Integrate to find translational velocity and location in inertial
         %frame
         
+        %Calculate (translational) acceleration
+        c_acceleration(:,t) = g + (1/mass)*(rot_frame_B2I(euler_angles(:,t))...
+            *total_thrust(:,t)); 
+        
         c_velocity(:,t) = c_velocity(:, t-1) + c_acceleration(:,t)*time_step;
         location(:,t) = location(:,t-1) + c_velocity(:,t)*time_step;
         
         
         %Plot
-        %{
+        
         cla;
         figure(1)
         plot_3D_stationary_drone(location(:,t), euler_angles(:,t), armlength);
-        axis([-0.5 5 -0.5 5 -0.5 5]);
+        axis([-5 5 -5 5 -5 5]);
         title(['Plot at time: ' num2str(t) ' out of ' num2str(length(time_interval))] );
         pause(0.1);
-        %}
+        
     end
 end
 

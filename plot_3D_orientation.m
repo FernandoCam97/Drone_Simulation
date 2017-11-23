@@ -1,7 +1,7 @@
 function plot_3D_orientation(location, euler_angles, armlength)
     %Where location is a column vector, as is the euler_angles
     p = zeros(3,1);
-    p = rotation_matrix(euler_angles)*...
+    p = rot_frame_B2I(euler_angles)*...
         [0; 0; armlength];
     figure(1)
     hold on

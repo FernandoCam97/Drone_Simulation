@@ -1,14 +1,21 @@
-function dnu_dt = get_dnu_dt(t, nu, time_interval, torques, Iyy, Ixx, Izz)
-torques_phi = torques(1,:);
-torques_theta = torques(2,:);
-torques_psi = torques(3,:);
+function nu_dot = get_dnu_dt(nu_at_t, I, torque_about_c_at_t)
 
-torques_phi = interp1(time_interval, torques_phi, t);
-torques_theta = interp1(time_interval, torques_theta, t);
-torques_psi = interp1(time_interval, torques_psi, t);
+nu_dot = zeros(3,1);
 
-dnu_dt = zeros(3,1);
-dnu_dt(1) = (Iyy-Izz)*nu(2)*nu(3)/Ixx + torques_phi./Ixx;
-dnu_dt(2) = (Izz-Ixx)*nu(1)*nu(3)/Iyy + torques_theta./Iyy;
-dnu_dt(3) = (Ixx-Iyy)*nu(1)*nu(2)/Izz + torques_psi./Izz;
+p = nu_at_t(1);
+q = nu_at_t(2);
+r = nu_at_t(3);
+
+Ixx = I(1,1);
+Iyy = I(2,2);
+Izz = I(3,3);
+
+tau_phi = torque_about_c_at_t(1);
+tau_theta = torque_about_c_at_t(2);
+tau_psi = torque_about_c_at_t(3);
+
+nu_dot(1) = (Iyy-Izz)*q*r/Ixx + tau_phi/Ixx;
+nu_dot(2) = (Izz-Ixx)*p*r/Iyy + tau_theta/Iyy;
+nu_dot(3) = (Ixx-Iyy)*p*q/Izz + tau_psi/Izz;
+
 end

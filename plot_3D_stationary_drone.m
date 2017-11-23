@@ -7,10 +7,10 @@ function plot_3D_stationary_drone(location, euler_angles, armlength)
     rotors = zeros(3,4); % Positions of rotors (x,y,z)
 
     
-    rotors(:,1) = rotation_matrix(euler_angles)*[armlength; 0; 0] + location;
-    rotors(:,2) = rotation_matrix(euler_angles)*[0; armlength; 0] + location;
-    rotors(:,3) = rotation_matrix(euler_angles)*[-armlength; 0; 0] + location;
-    rotors(:,4) = rotation_matrix(euler_angles)*[0; -armlength; 0] + location;
+    rotors(:,1) = rot_frame_B2I(euler_angles)*[armlength; 0; 0] + location;
+    rotors(:,2) = rot_frame_B2I(euler_angles)*[0; armlength; 0] + location;
+    rotors(:,3) = rot_frame_B2I(euler_angles)*[-armlength; 0; 0] + location;
+    rotors(:,4) = rot_frame_B2I(euler_angles)*[0; -armlength; 0] + location;
     
     %% Plot
     figure(1)

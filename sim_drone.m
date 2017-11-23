@@ -1,7 +1,7 @@
 clear all; clf;
 %% DECLARE VARIABLES
 
-armlength = 0.225;  %in m
+armlength = 0.225;  %length in m
 g = [0; 0; -9.81]; 
 mass = 0.45; %Mass in kg
 lift_constant = 3*10^(-6); %Denoted as "k" in the paper
@@ -56,11 +56,16 @@ for t = 1:length(time_interval)
         rotor_av(2,t) = 610;
         rotor_av(3,t) = 610-0.1*t;
         rotor_av(4,t) = 610;
+    elseif(t<20)
+        rotor_av(1,t) = 610-0.1*t;
+        rotor_av(2,t) = 610;
+        rotor_av(3,t) = 610+0.1*t;
+        rotor_av(4,t) = 610;
     else
-        rotor_av(1,t) = 650;
-        rotor_av(2,t) = 650;
-        rotor_av(3,t) = 650;
-        rotor_av(4,t) = 650;
+        rotor_av(1,t) = 640;
+        rotor_av(2,t) = 640;
+        rotor_av(3,t) = 640;
+        rotor_av(4,t) = 640;
     end
 
 end
@@ -82,7 +87,7 @@ for t = 1:length(time_interval)-1           %just so we can calculate one step a
     total_thrust(3,t) = sum(thrust(:,t));   %Only z component is nonzero 
     
     
-    %Calculate rotor torques from angular velocities and angular
+    %Calculate rotor torques from rotor angular velocities and angular
     %accelerations
     for i = 1:4
         rotor_torque(i, t) = drag_constant * rotor_av(i, t)^2 + rotor_inertia * rotor_aa(i, t);
@@ -95,15 +100,10 @@ for t = 1:length(time_interval)-1           %just so we can calculate one step a
     torque_about_c(3,t) = rotor_torque(1,t)-rotor_torque(2,t)+rotor_torque(3,t)-rotor_torque(4,t); %Affects yaw
     
     % Calculate nu (angular velocities in the body frame)
-    nu(:,t) = solve_diff_nu(torque_about_c,I,time_step,t,[0;0;0]);
+    nu(:,t) = solve_diff_nu(torque_about_c,I,time_step,t,location(:,1));
     
-    
-    % Calculate eta (from paper)
+    % Calculate angular velocity
     c_angular_velocity(:,t) = get_euler_angles_dot(euler_angles(:,t), nu(:,t));
-    
-    %Calculate angular acceleration
-    c_angular_acceleration(:,t) = get_euler_angles_ddot(euler_angles(:,t),...
-        nu(:,t), I, torque_about_c(:,t));
     
     
     %"Integrate" to calculate angular velocity and Euler Angles. This if
@@ -111,11 +111,12 @@ for t = 1:length(time_interval)-1           %just so we can calculate one step a
     if t > 1
         euler_angles(:, t) = euler_angles(:, t-1) + c_angular_velocity(:, t)*time_step; 
         euler_angles(:, t) = angle_converter(euler_angles(:,t));
+    
+        % Calculate angular acceleration
+        c_angular_acceleration(:,t) = get_euler_angles_ddot(euler_angles(:,t),...
+        nu(:,t), I, torque_about_c(:,t));
         
-        %Integrate to find translational velocity and location in inertial
-        %frame
-        
-        %Calculate (translational) acceleration
+        % Calculate (translational) acceleration
         c_acceleration(:,t) = g + (1/mass)*(rot_frame_B2I(euler_angles(:,t))...
             *total_thrust(:,t)); 
         
@@ -123,12 +124,11 @@ for t = 1:length(time_interval)-1           %just so we can calculate one step a
         location(:,t) = location(:,t-1) + c_velocity(:,t)*time_step;
         
         
-        %Plot
-        
+        % Live plot
         cla;
         figure(1)
         plot_3D_stationary_drone(location(:,t), euler_angles(:,t), armlength);
-        axis([-5 5 -5 5 -5 5]);
+        axis([-4 4 -4 4 -4 4]);
         title(['Plot at time: ' num2str(t) ' out of ' num2str(length(time_interval))] );
         pause(0.1);
         

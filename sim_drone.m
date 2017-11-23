@@ -52,9 +52,9 @@ total_thrust = zeros(3, steps); %Denoted "T" in paper. Note only z component is 
 for t = 1:length(time_interval)    
     
         rotor_av(1,t) = 800;
-        rotor_av(2,t) = 800;
+        rotor_av(2,t) = 0;
         rotor_av(3,t) = 800;
-        rotor_av(4,t) = 800;
+        rotor_av(4,t) = 0;
 
 end
 
@@ -88,7 +88,7 @@ for t = 1:length(time_interval)-1           %just so we can calculate one step a
     torque_about_c(3,t) = rotor_torque(1,t)-rotor_torque(2,t)+rotor_torque(3,t)-rotor_torque(4,t); %Affects yaw
     
     % Calculate nu (angular velocities in the body frame)
-    nu(:,t) = solve_diff_nu(torque_about_c,I,time_step,t,[0; 0; 0]);
+    nu(:,t) = solve_diff_nu(torque_about_c,I,time_step,t,[0;0;0]);
     
     %Calculate (translational) acceleration
     c_acceleration(:,t) = g + (rotation_matrix(euler_angles(:,t))...

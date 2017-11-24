@@ -1,6 +1,5 @@
-clear all; clf;
+function sim_drone(handles, rotor_av, ending_time, time_step)
 %% DECLARE VARIABLES
-
 armlength = 0.225;  %length in m
 g = [0; 0; -9.81]; 
 mass = 0.45; %Mass in kg
@@ -12,9 +11,9 @@ rotor_inertia = 3*10^(-5);    %moment of inertia of rotor
 
 % Time Simulation Variables 
 starting_time = 0;
-ending_time = 10;
-time_step = 0.1;
-steps = (ending_time - starting_time)/time_step;
+%ending_time = 10; % Inputted from GUI
+%time_step = 0.1;
+steps = uint64((ending_time - starting_time)/time_step);    % Convert to int since steps needs to be int for array indicies
 time_interval = linspace(starting_time, ending_time, steps);
 
 % Coordinate Variables
@@ -32,7 +31,7 @@ c_acceleration = zeros(3,steps);
 
 torque_about_c = zeros(3,steps);
 rotor_torque = zeros(4, steps);
-rotor_av = zeros(4, steps); % Angular velocity of rotors 1 through 4 going counterclockwise
+%rotor_av = zeros(4, steps); % Angular velocity of rotors 1 through 4 going counterclockwise
 rotor_aa = zeros(4, steps); % Angular accerlation of rotors 1 through 4 going counterclockwise
 thrust = zeros(4,steps); % Thrust on rotors 1 through 4 going counterclockwise.
 total_thrust = zeros(3, steps); %Denoted "T" in paper. Note only z component is nonzero 
@@ -47,7 +46,7 @@ total_thrust = zeros(3, steps); %Denoted "T" in paper. Note only z component is 
 % Calculate torque about center
 
 %% Run simulation
-
+%{
 %Simulate rotor angular velocity
 for t = 1:length(time_interval)    
     
@@ -69,7 +68,7 @@ for t = 1:length(time_interval)
     end
 
 end
-
+%}
 
 for t = 1:length(time_interval)-1           %just so we can calculate one step ahead and not crash at the end of the loop
     
@@ -126,15 +125,30 @@ for t = 1:length(time_interval)-1           %just so we can calculate one step a
         
         % Live plot
         cla;
-        figure(1)
-        plot_3D_stationary_drone(location(:,t), euler_angles(:,t), armlength);
+        axes(handles.main_plot);
+        plot_3D_stationary_drone(location(:,t), euler_angles(:,t), armlength, handles);
+        %hold on
+        plot_path(location(:,1:t), handles);
         axis([-4 4 -4 4 -4 4]);
         title(['Plot at time: ' num2str(t) ' out of ' num2str(length(time_interval))] );
         pause(0.1);
         
     end
+    
+    % Pause and reset conditions from GUI
+    if get(handles.pause,'UserData') == 1
+        while(1)
+            pause(0.001);
+            if get(handles.pause, 'UserData') == 0
+                break;
+            end
+        end
+    end
+    if get(handles.reset,'UserData') == true
+        set(handles.reset, 'UserData', false);
+        break;
+    end      
 end
-
 
 %% GRAPH RESULTS
 
@@ -150,4 +164,5 @@ title('First component of AA, AV, EA')
 legend('Angular Accerlation', 'Angular Velocity', 'Euler Angles')
 %}
 
+end
     

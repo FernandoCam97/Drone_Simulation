@@ -22,7 +22,7 @@ function varargout = gui(varargin)
 
 % Edit the above text to modify the response to help gui
 
-% Last Modified by GUIDE v2.5 23-Nov-2017 15:19:36
+% Last Modified by GUIDE v2.5 23-Nov-2017 19:25:15
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -115,10 +115,23 @@ function start_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 axes(handles.main_plot);
-%set(handles.main_plot,'XLim',[-4, 4],'YLim',[-4,4])
-%plot(linspace(1,10),linspace(1,10));
-get(handles.pause, 'UserData');
-sim_drone_play(handles);
+ending_time = str2num(get(handles.end_time, 'String'));
+time_step = str2num(get(handles.time_step, 'String'));
+steps = uint64(ending_time/time_step);       % Must convert to int in order to populate rotor_av array without issue
+
+% Populates rotor speeds matrix given inputted functions
+rotor_av = zeros(4,steps);
+rotor_1_fun = sym(get(handles.rotor_1, 'String'));
+rotor_2_fun = sym(get(handles.rotor_2, 'String'));
+rotor_3_fun = sym(get(handles.rotor_3, 'String'));
+rotor_4_fun = sym(get(handles.rotor_4, 'String'));
+for i = 1 : steps
+    rotor_av(1,i) = subs(rotor_1_fun,i);
+    rotor_av(2,i) = subs(rotor_2_fun,i);
+    rotor_av(3,i) = subs(rotor_3_fun,i);
+    rotor_av(4,i) = subs(rotor_4_fun,i);
+end
+sim_drone(handles, rotor_av, ending_time, time_step);
 
 
 
@@ -141,3 +154,141 @@ function pause_Callback(hObject, eventdata, handles)
 
 suspend = get(hObject,'Value');
 set(handles.pause,'UserData',suspend);
+
+
+
+function rotor_1_Callback(hObject, eventdata, handles)
+% hObject    handle to rotor_1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of rotor_1 as text
+%        str2double(get(hObject,'String')) returns contents of rotor_1 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function rotor_1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to rotor_1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function rotor_2_Callback(hObject, eventdata, handles)
+% hObject    handle to rotor_2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of rotor_2 as text
+%        str2double(get(hObject,'String')) returns contents of rotor_2 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function rotor_2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to rotor_2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function rotor_3_Callback(hObject, eventdata, handles)
+% hObject    handle to rotor_3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of rotor_3 as text
+%        str2double(get(hObject,'String')) returns contents of rotor_3 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function rotor_3_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to rotor_3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function rotor_4_Callback(hObject, eventdata, handles)
+% hObject    handle to rotor_4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of rotor_4 as text
+%        str2double(get(hObject,'String')) returns contents of rotor_4 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function rotor_4_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to rotor_4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function end_time_Callback(hObject, eventdata, handles)
+% hObject    handle to end_time (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of end_time as text
+%        str2double(get(hObject,'String')) returns contents of end_time as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function end_time_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to end_time (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function time_step_Callback(hObject, eventdata, handles)
+% hObject    handle to time_step (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of time_step as text
+%        str2double(get(hObject,'String')) returns contents of time_step as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function time_step_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to time_step (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

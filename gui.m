@@ -117,7 +117,7 @@ function start_Callback(hObject, eventdata, handles)
 axes(handles.main_plot);
 ending_time = str2num(get(handles.end_time, 'String'));
 time_step = str2num(get(handles.time_step, 'String'));
-steps = uint64(ending_time/time_step);       % Must convert to int in order to populate rotor_av array without issue
+steps = floor((ending_time/time_step));       % Must convert to int in order to populate rotor_av array without issu)e
 
 % Populates rotor speeds matrix given inputted functions
 rotor_av = zeros(4,steps);

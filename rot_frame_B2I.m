@@ -1,4 +1,4 @@
-function matrix = rotation_matrix(euler_angles)
+function matrix = rot_frame_B2I(euler_angles)
 %converts from body frame to inertial frame
 
 phi = euler_angles(1);

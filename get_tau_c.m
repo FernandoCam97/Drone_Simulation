@@ -30,7 +30,8 @@ Izz = I(3,3);
 % Compute equations
 
 tau_c(1) = (k_phi_d*(phi_d_dot - phi_dot) + k_phi_p*(phi_d - phi))*Izz;;
-tau_c(2) = (k_theta_d*(theta_d_dot - theta_dot) + k_theta_p*(theta_d - theta))*Iyy;
+tau_c(2) = (k_theta_d*(theta_d_dot - theta_dot) + k_theta_p*...
+    (theta_d - theta))*Iyy;
 tau_c(3) = (k_psi_d*(psi_d_dot - psi_dot) + k_psi_p*(psi_d - psi))*Ixx;
 
 end

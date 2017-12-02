@@ -50,14 +50,14 @@ thrust_control = zeros(1, steps);
 tau = zeros(3, steps);      % Denoted in the paper as "tau_phi", "tau_theta", "tau_psi"
 des_euler_angles = zeros(3,steps);
 des_euler_angles_dot = zeros(3,steps);
-rotor_av_c = zeros(3,1);    % Current controlled rotor velocity
+
 
 % Control Constants 
 k_z_d = 2.5;
 k_phi_d = 1.75;
 k_theta_d = 1.75;
 k_psi_d = 1.75;
-k_z_p = 1.5
+k_z_p = 1.5;
 k_phi_p = 6;
 k_theta_p = 6;
 k_psi_p = 6;
@@ -72,7 +72,17 @@ euler_angles(:,1) = [0;0;0];
 for t = 1:length(time_interval)  
     
     % Set desired locations and angles (for control)
+    if t>50
+        des_euler_angles(:,t) = [pi/16;0;0];
+    end
     
+    % Calculate velocities of desired variables
+    if t > 1
+        des_euler_angles_dot(:,t) = (des_euler_angles(:,t) - ...
+            des_euler_angles(:,t-1))/time_step;
+        des_location_dot(:,t) = (des_location(:,t) - des_location(:,t-1))...
+            /time_step;
+    end
     %{
     %Simulate rotor angular velocity
     if(t<10)
@@ -99,8 +109,6 @@ end
 %% Run simulation
 
 for t = 1:length(time_interval)-1           %Just so we can calculate one step ahead and not crash at the end of the loop
-    
-    
         
     
     % Integrate to find rotor angular accleration of rotors 
@@ -155,26 +163,27 @@ for t = 1:length(time_interval)-1           %Just so we can calculate one step a
         
         
         % CONTROL SECTION START
-        rotor_av_c = get_rotor_av(armlength, lift_constant, ...
+        
+        % Set rotor speeds
+        rotor_av(:,t+1) = get_rotor_av(armlength, lift_constant, ...
             drag_constant,...
             ...
-            get_thrust_c(mass, g, k_z_p, k_z_d, des_location, ...
-            des_location_dot, location, c_velocity, euler_angles), ...
+            get_thrust_c(mass, g, k_z_p, k_z_d, des_location(:,t), ...
+            des_location_dot(:,t), location(:,t), c_velocity(:,t),...
+            euler_angles(:,t)), ...
             ...
             get_tau_c(k_phi_d, k_phi_p, k_theta_d, k_theta_p, k_psi_d, ...
-            k_psi_p, des_euler_angles_dot, des_euler_angles,...
-            get_euler_angles_dot(euler_angles, nu(:,t)),...
-            euler_angles, I));
+            k_psi_p, des_euler_angles_dot(:,t), des_euler_angles(:,t),...
+            get_euler_angles_dot(euler_angles(:,t), nu(:,t)),...
+            euler_angles(:,t), I));
+       
         
-        rotor_av(1,t) = rotor_av_c(1);
-        rotor_av(2,t) = rotor_av_c(2);
-        rotor_av(3,t) = rotor_av_c(3);
-        rotor_av(4,t) = rotor_av_c(4);
         
         % CONTROL SECTION END
         
         
-        % Live plot
+        % Live plot. If condition for ease of toggle
+        if true
         cla;
         figure(1);
         %axes(handles.main_plot); %GUI 
@@ -183,7 +192,8 @@ for t = 1:length(time_interval)-1           %Just so we can calculate one step a
         plot_path(location(:,1:t)); %GUI included handles here
         axis([-4 4 -4 4 -4 4]);
         title(['Plot at time: ' num2str(t) ' out of ' num2str(length(time_interval))] );
-        pause(0.1);
+        pause(0.05);
+        end
         
     end
     
@@ -206,6 +216,8 @@ end
 
 %% GRAPH RESULTS
 
+%figure(3)
+%plot(time_interval, location);
 %Second component of AA, AV, EA
 %{
 figure(2)
@@ -217,4 +229,6 @@ hold off
 title('First component of AA, AV, EA')
 legend('Angular Accerlation', 'Angular Velocity', 'Euler Angles')
 %}
+
+
     

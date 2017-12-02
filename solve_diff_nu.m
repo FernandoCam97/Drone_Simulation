@@ -1,9 +1,10 @@
 function nu_i = solve_diff_nu(torques,I,time_step,iteration,...
     initial_conditions)
 
-Iyy = I(2,2);
 Ixx = I(1,1);
+Iyy = I(2,2);
 Izz = I(3,3);
+
 diff_end_time = iteration*time_step;
 time_interval = linspace(0,diff_end_time, iteration);
 torques = torques(:,1:iteration);

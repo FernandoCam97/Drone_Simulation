@@ -3,7 +3,7 @@ clc;
 close all;
 
 %% DECLARE VARIABLES
-armlength = 0.225;  %length in m
+armlength = 0.225;  %length in m. Denoted as "l" in the paper
 g = [0; 0; -9.81]; 
 mass = 0.45; %Mass in kg
 lift_constant = 3*10^(-6); %Denoted as "k" in the paper
@@ -20,9 +20,9 @@ steps = floor((ending_time - starting_time)/time_step);    % Convert to int sinc
 time_interval = linspace(starting_time, ending_time, steps);
 
 % Coordinate Variables
-euler_angles = zeros(3,steps); % roll, pitch yaw
+euler_angles = zeros(3,steps); % roll, pitch yaw. Denoted "phi, theta, psi" in paper
 location = zeros(3,steps); % x y z 
-c = [location; euler_angles]; % x,y,z,roll,pitch,yaw, and C is the center of the drone.
+c = [location; euler_angles]; % x,y,z,roll, pitch,yaw, and C is the center of the drone.
 
 % Motion Variables
 c_angular_velocity = zeros(3,steps);
@@ -43,11 +43,25 @@ total_thrust = zeros(3, steps); %Denoted "T" in paper. Note only z component is 
 
 % Control Variables 
 location_error = zeros(3, steps);       %difference between ideal path and actual location
-path = zeros(3,steps);      %Planned, ideal path 
+des_location = zeros(3,steps);      %Planned, ideal path 
+des_location_dot = zeros(3,steps);
 
-p_control_const = [0,0,1000]; 
-i_control_const = [0,0,0];
-d_control_const = [0,0,0];
+thrust_control = zeros(1, steps);
+tau = zeros(3, steps);      % Denoted in the paper as "tau_phi", "tau_theta", "tau_psi"
+des_euler_angles = zeros(3,steps);
+des_euler_angles_dot = zeros(3,steps);
+rotor_av_c = zeros(3,1);    % Current controlled rotor velocity
+
+% Control Constants 
+k_z_d = 2.5;
+k_phi_d = 1.75;
+k_theta_d = 1.75;
+k_psi_d = 1.75;
+k_z_p = 1.5
+k_phi_p = 6;
+k_theta_p = 6;
+k_psi_p = 6;
+
 
 %% INITIAL CONDITIONS
 location(:,1) = [0;0;0];
@@ -55,10 +69,9 @@ euler_angles(:,1) = [0;0;0];
 
 
 %% Pre-Simulation Calculations
-
-
 for t = 1:length(time_interval)  
     
+    % Set desired locations and angles (for control)
     
     %{
     %Simulate rotor angular velocity
@@ -79,6 +92,7 @@ for t = 1:length(time_interval)
         rotor_av(4,t) = 640;
     end
     %}
+    
 end
 
 
@@ -141,14 +155,21 @@ for t = 1:length(time_interval)-1           %Just so we can calculate one step a
         
         
         % CONTROL SECTION START
-        % Calculate error
-        location_error(:,t) = location(:,t) - path(:,t);
+        rotor_av_c = get_rotor_av(armlength, lift_constant, ...
+            drag_constant,...
+            ...
+            get_thrust_c(mass, g, k_z_p, k_z_d, des_location, ...
+            des_location_dot, location, c_velocity, euler_angles), ...
+            ...
+            get_tau_c(k_phi_d, k_phi_p, k_theta_d, k_theta_p, k_psi_d, ...
+            k_psi_p, des_euler_angles_dot, des_euler_angles,...
+            get_euler_angles_dot(euler_angles, nu(:,t)),...
+            euler_angles, I));
         
-        % Set rotor speeds for the next time step
-        for i = 1:4
-            rotor_av(i,t+1) = p_control(p_control_const, location_error(:,t));
-        end
-
+        rotor_av(1,t) = rotor_av_c(1);
+        rotor_av(2,t) = rotor_av_c(2);
+        rotor_av(3,t) = rotor_av_c(3);
+        rotor_av(4,t) = rotor_av_c(4);
         
         % CONTROL SECTION END
         

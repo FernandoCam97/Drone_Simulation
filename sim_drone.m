@@ -6,9 +6,10 @@ close all;
 armlength = 0.225;  %length in m. Denoted as "l" in the paper
 g = [0; 0; -9.81]; 
 mass = 0.45; %Mass in kg
-lift_constant = 3*10^(-6); %Denoted as "k" in the paper
-drag_constant = 1*10^(-7); %Denoted as "b" in the paper
+lift_constant = 3*10^(-6); % of rotors. Denoted as "k" in the paper
+drag_constant = 1*10^(-7); % of rotors? Denoted as "b" in the paper
 I = [5*10^(-3) 0 0; 0 5*10^(-3) 0; 0 0 9*10^(-3)]; % Moment of Inertia of drone (diagonal assuming the drone is symmetrical)
+drag_coeff = [0.25 0 0; 0 0 0.25; 0 0 0.25;]; % of quadcopter as whole. Denoted "A" in paper
 rotor_inertia = 3*10^(-5);    %moment of inertia of rotor
 
 
@@ -73,10 +74,11 @@ for t = 1:length(time_interval)
     
     % Set desired locations and angles (for control)
     if t>50
-        des_euler_angles(:,t) = [pi/16;0;0];
+        %des_euler_angles(:,t) = [pi/16;0;0];
+        des_location(:,t) = [0; 0; 2];
     end
     
-    % Calculate velocities of desired variables
+    % Populates desired Euler angles dot and location dot matrices 
     if t > 1
         des_euler_angles_dot(:,t) = (des_euler_angles(:,t) - ...
             des_euler_angles(:,t-1))/time_step;
@@ -154,9 +156,9 @@ for t = 1:length(time_interval)-1           %Just so we can calculate one step a
         c_angular_acceleration(:,t) = get_euler_angles_ddot(euler_angles(:,t),...
         nu(:,t), I, torque_about_c(:,t));
         
-        % Calculate (translational) acceleration
+        % Calculate (translational) acceleration (eqn 21)
         c_acceleration(:,t) = g + (1/mass)*(rot_frame_B2I(euler_angles(:,t))...
-            *total_thrust(:,t)); 
+            *total_thrust(:,t)) - (1/mass)*drag_coeff*c_velocity(:,t); 
         
         c_velocity(:,t) = c_velocity(:, t-1) + c_acceleration(:,t)*time_step;
         location(:,t) = location(:,t-1) + c_velocity(:,t)*time_step;

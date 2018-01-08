@@ -1,0 +1,23 @@
+function dv_dt = dv_dt_diffeq(t, v euler_angles, drag_coeff, g, ...
+    total_thrust, time_interval)
+
+phi = interp1(time_interval, euler_angles(1,:), t);
+theta = interp1(time_interval, euler_angles(2,:), t);
+psi = interp1(time_interval, euler_angles(3,:), t);
+
+thrust = interp1(time_interval, total_thrust(3,:), t);
+
+% Part of the eqn. Calculated once to simplify and in order to easily
+% isolate a particular component of it
+
+thrust_inertial = (1/mass)*rot_frame_B2I([phi; theta; psi])*[0; 0; thrust];
+
+dv_dt = zeros(3,1);
+
+dv_dt(1) = thrust_intertial(1)-(1/mass)*drag_coeff(1,1)*v(1);
+dv_dt(2) = thrust_intertial(2)-(1/mass)*drag_coeff(2,2)*v(2);
+dv_dt(3) = g(3) + thrust_intertial(3)-(1/mass)*drag_coeff(3,3)*v(3);
+
+
+
+end

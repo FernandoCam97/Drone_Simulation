@@ -168,11 +168,12 @@ for t = 1:length(time_interval)-1           %Just so we can calculate one step a
 
     % Calculate angular acceleration (arithmetic)
     c_angular_acceleration(:,t) = get_euler_angles_ddot(euler_angles(:,t),...
-        nu(:,t), I, torque_about_c(:,t));
+    nu(:,t), I, torque_about_c(:,t));
 
     % Calculate velocity
+    
     c_velocity(:,t) = solve_diff_c_accel(g, mass, euler_angles, ...
-        total_thrust, drag_coeff, t, c_velocity(:,1), time_step);
+        total_thrust, drag_coeff, iteration, initial_conditions, time_step);
 
     % "Integration" (We're just summing to get the next step)
     euler_angles(:, t+1) = euler_angles(:, t) + ...

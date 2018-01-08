@@ -1,6 +1,8 @@
 function nu_i = solve_diff_nu(torques,I,time_step,iteration,...
     initial_conditions)
 
+% nu at the "ith" time step
+
 Ixx = I(1,1);
 Iyy = I(2,2);
 Izz = I(3,3);
